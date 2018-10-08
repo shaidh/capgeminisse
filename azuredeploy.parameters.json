@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "virtualNetworks_DemoVNet_name": {
+      "value": "DemoVNet"
+    },
+    "virtualMachines_DatabaseVM1_name": {
+      "value": "DatabaseVM1"
+    },
+    "virtualMachines_WebServerVM1_name": {
+      "value": "WebServerVM1"
+    },
+    "networkInterfaces_databasevm1357_name": {
+      "value": "databasevm1357"
+    },
+    "networkSecurityGroups_BackEndNSG_name": {
+      "value": "BackEndNSG"
+    },
+    "networkInterfaces_webservervm1295_name": {
+      "value": "webservervm1295"
+    },
+    "networkSecurityGroups_FrontEndNSG_name": {
+      "value": "FrontEndNSG"
+    },
+    "publicIPAddresses_WebServerVM1_ip_name": {
+      "value": "WebServerVM2_ip"
+    },
+    "storageAccounts_virtualdiskstorageacc_name": {
+      "value": "virtualdiskstorageacc2"
+    },
+    "publicIPAddresses_DatabaseServerVM1_ip1_name": {
+      "value": "DatabaseServerVM1_ip1"
+    },
+    "availabilitySets_WebServerAvaulabilitySet_name": {
+      "value": "WebServerAvaulabilitySet"
+    },
+    "vm_adminPassword_name": {
+      "value": "RobinaSha101"
+    },
+    "adlAnalyticsName": {
+      "value": "capsse123"
+    },
+    "adlStoreName": {
+      "value": "capssestore123"
+    },
+    "location": {
+      "value": "East US 2"
+    }
+
+  }
+}

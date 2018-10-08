@@ -1,0 +1,859 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "virtualNetworks_DemoVNet_name": {
+      "defaultValue": "DemoVNet",
+      "type": "string"
+    },
+    "virtualMachines_DatabaseVM1_name": {
+      "defaultValue": "DatabaseVM1",
+      "type": "string"
+    },
+    "virtualMachines_WebServerVM1_name": {
+      "defaultValue": "WebServerVM1",
+      "type": "string"
+    },
+    "networkInterfaces_databasevm1357_name": {
+      "defaultValue": "databasevm1357",
+      "type": "string"
+    },
+    "networkSecurityGroups_BackEndNSG_name": {
+      "defaultValue": "BackEndNSG",
+      "type": "string"
+    },
+    "networkInterfaces_webservervm1295_name": {
+      "defaultValue": "webservervm1295",
+      "type": "string"
+    },
+    "networkSecurityGroups_FrontEndNSG_name": {
+      "defaultValue": "FrontEndNSG",
+      "type": "string"
+    },
+    "publicIPAddresses_WebServerVM1_ip_name": {
+      "defaultValue": "WebServerVM2-ip",
+      "type": "string"
+    },
+    "storageAccounts_virtualdiskstorageacc_name": {
+      "defaultValue": "virtualdiskstorageacc",
+      "type": "string"
+    },
+    "publicIPAddresses_DatabaseServerVM1_ip1_name": {
+      "defaultValue": "DatabaseServerVM1-ip1",
+      "type": "string"
+    },
+    "availabilitySets_WebServerAvaulabilitySet_name": {
+      "defaultValue": "WebServerAvaulabilitySet",
+      "type": "string"
+    },
+    "vm_adminPassword_name": {
+      "defaultValue": "RobinaSha101",
+      "type": "string"
+    },
+    "adlAnalyticsName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Data Lake Analytics account to create."
+      }
+    },
+    "adlStoreName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Data Lake Store account to create."
+      }
+    },
+    "location": {
+      "type": "string",
+      "allowedValues": [
+        "East US 2",
+        "Central US",
+        "North Europe",
+        "West Europe"
+      ],
+      "defaultValue": "East US 2",
+      "metadata": {
+        "description": "The location in which the resources will be created."
+      }
+    }
+
+  },
+  "variables": {
+    "adlsApiVersion": "2016-11-01",
+    "adlaApiVersion": "2016-11-01"
+  },
+  "resources": [
+    {
+      "comments": "Generalized from resource: '/subscriptions/c54f67a9-0bf8-40c4-b50d-4bbb2266a43d/resourceGroups/ResCapGemini/providers/Microsoft.Compute/availabilitySets/WebServerAvaulabilitySet'.",
+      "type": "Microsoft.Compute/availabilitySets",
+      "sku": {
+        "name": "Classic"
+      },
+      "name": "[parameters('availabilitySets_WebServerAvaulabilitySet_name')]",
+      "apiVersion": "2017-12-01",
+      "location": "westeurope",
+      "scale": null,
+      "properties": {
+        "platformUpdateDomainCount": 3,
+        "platformFaultDomainCount": 2,
+        "virtualMachines": [
+          {
+            "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_WebServerVM1_name'))]"
+          }
+        ]
+      },
+      "dependsOn": [
+      ]
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/c54f67a9-0bf8-40c4-b50d-4bbb2266a43d/resourceGroups/ResCapGemini/providers/Microsoft.Compute/virtualMachines/DatabaseVM1'.",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('virtualMachines_DatabaseVM1_name')]",
+      "apiVersion": "2017-12-01",
+      "location": "westeurope",
+      "scale": null,
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_B2s"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftSQLServer",
+            "offer": "SQL2014SP2-WS2012R2",
+            "sku": "Enterprise",
+            "version": "latest"
+          },
+          "osDisk": {
+            "osType": "Windows",
+            "name": "[parameters('virtualMachines_DatabaseVM1_name')]",
+            "createOption": "FromImage",
+            "vhd": {
+              "uri": "[concat('https', '://', parameters('storageAccounts_virtualdiskstorageacc_name'), '.blob.core.windows.net', concat('/vhds/', parameters('virtualMachines_DatabaseVM1_name'),'20180814135125.vhd'))]"
+            },
+            "caching": "ReadWrite",
+            "diskSizeGB": 127
+          },
+          "dataDisks": [
+            {
+              "lun": 0,
+              "name": "[concat(parameters('virtualMachines_DatabaseVM1_name'),'-disk-1')]",
+              "createOption": "Empty",
+              "vhd": {
+                "uri": "[concat('https', '://', parameters('storageAccounts_virtualdiskstorageacc_name'), '.blob.core.windows.net', concat('/vhds/', parameters('virtualMachines_DatabaseVM1_name'),'-disk-1-20180814135125.vhd'))]"
+              },
+              "caching": "ReadOnly",
+              "diskSizeGB": 1023
+            }
+          ]
+        },
+        "osProfile": {
+          "computerName": "[parameters('virtualMachines_DatabaseVM1_name')]",
+          "adminUsername": "shaidh",
+          "adminPassword": "[parameters('vm_adminPassword_name')]",
+          "windowsConfiguration": {
+            "provisionVMAgent": true,
+            "enableAutomaticUpdates": true
+          },
+          "secrets": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_databasevm1357_name'))]"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_virtualdiskstorageacc_name'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_databasevm1357_name'))]"
+      ]
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/c54f67a9-0bf8-40c4-b50d-4bbb2266a43d/resourceGroups/ResCapGemini/providers/Microsoft.Compute/virtualMachines/WebServerVM1'.",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('virtualMachines_WebServerVM1_name')]",
+      "apiVersion": "2017-12-01",
+      "location": "westeurope",
+      "scale": null,
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_WebServerAvaulabilitySet_name'))]"
+        },
+        "hardwareProfile": {
+          "vmSize": "Standard_B2s"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2012-R2-Datacenter",
+            "version": "latest"
+          },
+          "osDisk": {
+            "osType": "Windows",
+            "name": "[parameters('virtualMachines_WebServerVM1_name')]",
+            "createOption": "FromImage",
+            "vhd": {
+              "uri": "[concat('https', '://', parameters('storageAccounts_virtualdiskstorageacc_name'), '.blob.core.windows.net', concat('/vhds/', parameters('virtualMachines_WebServerVM1_name'),'20180814133313.vhd'))]"
+            },
+            "caching": "ReadWrite",
+            "diskSizeGB": 127
+          },
+          "dataDisks": []
+        },
+        "osProfile": {
+          "computerName": "[parameters('virtualMachines_WebServerVM1_name')]",
+          "adminUsername": "shaidh",
+          "adminPassword": "[parameters('vm_adminPassword_name')]",
+          "windowsConfiguration": {
+            "provisionVMAgent": true,
+            "enableAutomaticUpdates": true
+          },
+          "secrets": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_webservervm1295_name'))]"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_WebServerAvaulabilitySet_name'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_virtualdiskstorageacc_name'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_webservervm1295_name'))]"
+      ]
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/c54f67a9-0bf8-40c4-b50d-4bbb2266a43d/resourceGroups/ResCapGemini/providers/Microsoft.Network/networkInterfaces/databasevm1357'.",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[parameters('networkInterfaces_databasevm1357_name')]",
+      "apiVersion": "2018-02-01",
+      "location": "westeurope",
+      "scale": null,
+      "properties": {
+        "provisioningState": "Succeeded",
+        "resourceGuid": "2b1fa15e-843c-42bf-b5de-f88d88cbf7f7",
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "etag": "W/\"fa3b7525-cfff-4826-ac9a-826e84ae76d9\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "privateIPAddress": "192.168.2.4",
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_DatabaseServerVM1_ip1_name'))]"
+              },
+              "subnet": {
+                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_DemoVNet_name')), '/subnets/BackEndSubnet')]"
+              },
+              "primary": true,
+              "privateIPAddressVersion": "IPv4"
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": [],
+          "appliedDnsServers": [],
+          "internalDomainNameSuffix": "up4ksfnei2buvee1vu3bsftcqb.ax.internal.cloudapp.net"
+        },
+        "macAddress": "00-0D-3A-28-94-20",
+        "enableAcceleratedNetworking": false,
+        "enableIPForwarding": false,
+        "primary": true
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_DatabaseServerVM1_ip1_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_DemoVNet_name'))]"
+      ]
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/c54f67a9-0bf8-40c4-b50d-4bbb2266a43d/resourceGroups/ResCapGemini/providers/Microsoft.Network/networkInterfaces/webservervm1295'.",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[parameters('networkInterfaces_webservervm1295_name')]",
+      "apiVersion": "2018-02-01",
+      "location": "westeurope",
+      "scale": null,
+      "properties": {
+        "provisioningState": "Succeeded",
+        "resourceGuid": "92cfba77-b413-4f65-92a1-17dd2e48f2dc",
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "etag": "W/\"8871545d-6f3f-4e8a-8437-12d1f0737ab0\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "privateIPAddress": "192.168.1.4",
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_WebServerVM1_ip_name'))]"
+              },
+              "subnet": {
+                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_DemoVNet_name')), '/subnets/FrontEndSubnet')]"
+              },
+              "primary": true,
+              "privateIPAddressVersion": "IPv4"
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": [],
+          "appliedDnsServers": [],
+          "internalDomainNameSuffix": "up4ksfnei2buvee1vu3bsftcqb.ax.internal.cloudapp.net"
+        },
+        "macAddress": "00-0D-3A-28-41-9F",
+        "enableAcceleratedNetworking": false,
+        "enableIPForwarding": false,
+        "primary": true
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_WebServerVM1_ip_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_DemoVNet_name'))]"
+      ]
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/c54f67a9-0bf8-40c4-b50d-4bbb2266a43d/resourceGroups/ResCapGemini/providers/Microsoft.Network/networkSecurityGroups/BackEndNSG'.",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[parameters('networkSecurityGroups_BackEndNSG_name')]",
+      "apiVersion": "2018-02-01",
+      "location": "westeurope",
+      "scale": null,
+      "properties": {
+        "provisioningState": "Succeeded",
+        "resourceGuid": "f229dc68-5253-42ab-aaba-95249ebfbe70",
+        "securityRules": [
+          {
+            "name": "sql-rule-allow",
+            "etag": "W/\"dae1d45e-fca4-4694-830a-8c02f3b3c880\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "1433",
+              "sourceAddressPrefix": "Sql",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "http-rule-deny",
+            "etag": "W/\"dae1d45e-fca4-4694-830a-8c02f3b3c880\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "80",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "Internet",
+              "access": "Deny",
+              "priority": 100,
+              "direction": "Outbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "rdp-rule-allow",
+            "etag": "W/\"dae1d45e-fca4-4694-830a-8c02f3b3c880\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 110,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          }
+        ],
+        "defaultSecurityRules": [
+          {
+            "name": "AllowVnetInBound",
+            "etag": "W/\"dae1d45e-fca4-4694-830a-8c02f3b3c880\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "description": "Allow inbound traffic from all VMs in VNET",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 65000,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "AllowAzureLoadBalancerInBound",
+            "etag": "W/\"dae1d45e-fca4-4694-830a-8c02f3b3c880\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "description": "Allow inbound traffic from azure load balancer",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "AzureLoadBalancer",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 65001,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "DenyAllInBound",
+            "etag": "W/\"dae1d45e-fca4-4694-830a-8c02f3b3c880\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "description": "Deny all inbound traffic",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Deny",
+              "priority": 65500,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "AllowVnetOutBound",
+            "etag": "W/\"dae1d45e-fca4-4694-830a-8c02f3b3c880\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "description": "Allow outbound traffic from all VMs to all VMs in VNET",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 65000,
+              "direction": "Outbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "AllowInternetOutBound",
+            "etag": "W/\"dae1d45e-fca4-4694-830a-8c02f3b3c880\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "description": "Allow outbound traffic from all VMs to Internet",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "Internet",
+              "access": "Allow",
+              "priority": 65001,
+              "direction": "Outbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "DenyAllOutBound",
+            "etag": "W/\"dae1d45e-fca4-4694-830a-8c02f3b3c880\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "description": "Deny all outbound traffic",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Deny",
+              "priority": 65500,
+              "direction": "Outbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          }
+        ]
+      },
+      "dependsOn": []
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/c54f67a9-0bf8-40c4-b50d-4bbb2266a43d/resourceGroups/ResCapGemini/providers/Microsoft.Network/networkSecurityGroups/FrontEndNSG'.",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[parameters('networkSecurityGroups_FrontEndNSG_name')]",
+      "apiVersion": "2018-02-01",
+      "location": "westeurope",
+      "scale": null,
+      "properties": {
+        "provisioningState": "Succeeded",
+        "resourceGuid": "5efb31e0-5907-49ac-8d81-b5f4934ef884",
+        "securityRules": [
+          {
+            "name": "web-rule-allow",
+            "etag": "W/\"a8d0fba9-fe38-46fe-9ef6-c6981feb28bf\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "80",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "rdp-rule-allow",
+            "etag": "W/\"a8d0fba9-fe38-46fe-9ef6-c6981feb28bf\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 110,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          }
+        ],
+        "defaultSecurityRules": [
+          {
+            "name": "AllowVnetInBound",
+            "etag": "W/\"a8d0fba9-fe38-46fe-9ef6-c6981feb28bf\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "description": "Allow inbound traffic from all VMs in VNET",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 65000,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "AllowAzureLoadBalancerInBound",
+            "etag": "W/\"a8d0fba9-fe38-46fe-9ef6-c6981feb28bf\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "description": "Allow inbound traffic from azure load balancer",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "AzureLoadBalancer",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 65001,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "DenyAllInBound",
+            "etag": "W/\"a8d0fba9-fe38-46fe-9ef6-c6981feb28bf\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "description": "Deny all inbound traffic",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Deny",
+              "priority": 65500,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "AllowVnetOutBound",
+            "etag": "W/\"a8d0fba9-fe38-46fe-9ef6-c6981feb28bf\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "description": "Allow outbound traffic from all VMs to all VMs in VNET",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 65000,
+              "direction": "Outbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "AllowInternetOutBound",
+            "etag": "W/\"a8d0fba9-fe38-46fe-9ef6-c6981feb28bf\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "description": "Allow outbound traffic from all VMs to Internet",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "Internet",
+              "access": "Allow",
+              "priority": 65001,
+              "direction": "Outbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "DenyAllOutBound",
+            "etag": "W/\"a8d0fba9-fe38-46fe-9ef6-c6981feb28bf\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "description": "Deny all outbound traffic",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Deny",
+              "priority": 65500,
+              "direction": "Outbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          }
+        ]
+      },
+      "dependsOn": []
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/c54f67a9-0bf8-40c4-b50d-4bbb2266a43d/resourceGroups/ResCapGemini/providers/Microsoft.Network/publicIPAddresses/DatabaseServerVM1-ip1'.",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "sku": {
+        "name": "Basic",
+        "tier": "Regional"
+      },
+      "name": "[parameters('publicIPAddresses_DatabaseServerVM1_ip1_name')]",
+      "apiVersion": "2018-02-01",
+      "location": "westeurope",
+      "scale": null,
+      "properties": {
+        "provisioningState": "Succeeded",
+        "resourceGuid": "6c1faff8-360b-4e64-a04a-f2da039b8b70",
+        "ipAddress": "40.115.12.82",
+        "publicIPAddressVersion": "IPv4",
+        "publicIPAllocationMethod": "Dynamic",
+        "idleTimeoutInMinutes": 4,
+        "ipTags": []
+      },
+      "dependsOn": []
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/c54f67a9-0bf8-40c4-b50d-4bbb2266a43d/resourceGroups/ResCapGemini/providers/Microsoft.Network/publicIPAddresses/WebServerVM1-ip'.",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "sku": {
+        "name": "Basic",
+        "tier": "Regional"
+      },
+      "name": "[parameters('publicIPAddresses_WebServerVM1_ip_name')]",
+      "apiVersion": "2018-02-01",
+      "location": "westeurope",
+      "scale": null,
+      "properties": {
+        "provisioningState": "Succeeded",
+        "resourceGuid": "1e0d2f87-e74f-4e78-890a-8c2c2e93910c",
+        "ipAddress": "40.114.205.150",
+        "publicIPAddressVersion": "IPv4",
+        "publicIPAllocationMethod": "Dynamic",
+        "idleTimeoutInMinutes": 4,
+        "dnsSettings": {
+          "domainNameLabel": "capgeminisse123",
+          "fqdn": "capgeminisse123.westeurope.cloudapp.azure.com"
+        },
+        "ipTags": []
+      },
+      "dependsOn": []
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/c54f67a9-0bf8-40c4-b50d-4bbb2266a43d/resourceGroups/ResCapGemini/providers/Microsoft.Network/virtualNetworks/DemoVNet'.",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[parameters('virtualNetworks_DemoVNet_name')]",
+      "apiVersion": "2018-02-01",
+      "location": "westeurope",
+      "scale": null,
+      "properties": {
+        "provisioningState": "Succeeded",
+        "resourceGuid": "15a9fca3-47a4-4a03-909b-ad3a19166281",
+        "addressSpace": {
+          "addressPrefixes": [
+            "192.168.0.0/16"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "FrontEndSubnet",
+            "etag": "W/\"1d1d3007-4141-4374-ba29-9a4ddd668f67\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "addressPrefix": "192.168.1.0/24",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_FrontEndNSG_name'))]"
+              },
+              "serviceEndpoints": []
+            }
+          },
+          {
+            "name": "BackEndSubnet",
+            "etag": "W/\"1d1d3007-4141-4374-ba29-9a4ddd668f67\"",
+            "properties": {
+              "provisioningState": "Succeeded",
+              "addressPrefix": "192.168.2.0/24",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_BackEndNSG_name'))]"
+              },
+              "serviceEndpoints": []
+            }
+          }
+        ],
+        "virtualNetworkPeerings": [],
+        "enableDdosProtection": false,
+        "enableVmProtection": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_FrontEndNSG_name'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_BackEndNSG_name'))]"
+      ]
+    },
+    {
+      "comments": "Generalized from resource: '/subscriptions/c54f67a9-0bf8-40c4-b50d-4bbb2266a43d/resourceGroups/ResCapGemini/providers/Microsoft.Storage/storageAccounts/virtualdiskstorageacc'.",
+      "type": "Microsoft.Storage/storageAccounts",
+      "sku": {
+        "name": "Premium_LRS",
+        "tier": "Premium"
+      },
+      "kind": "Storage",
+      "name": "[parameters('storageAccounts_virtualdiskstorageacc_name')]",
+      "apiVersion": "2018-03-01-preview",
+      "location": "westeurope",
+      "tags": {},
+      "scale": null,
+      "properties": {
+        "networkAcls": {
+          "bypass": "AzureServices",
+          "virtualNetworkRules": [],
+          "ipRules": [],
+          "defaultAction": "Allow"
+        },
+        "supportsHttpsTrafficOnly": false,
+        "encryption": {
+          "services": {
+            "file": {
+              "enabled": true
+            },
+            "blob": {
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        }
+      },
+      "dependsOn": []
+    },
+
+    {
+      "name": "[parameters('adlStoreName')]",
+      "type": "Microsoft.DataLakeStore/accounts",
+      "location": "[parameters('location')]",
+      "apiVersion": "2016-11-01",
+      "dependsOn": [],
+      "tags": {}
+    },
+    {
+      "name": "[parameters('adlAnalyticsName')]",
+      "type": "Microsoft.DataLakeAnalytics/accounts",
+      "location": "[parameters('location')]",
+      "apiVersion": "2016-11-01",
+      "dependsOn": [
+        "[concat('Microsoft.DataLakeStore/accounts/', parameters('adlStoreName'))]"
+      ],
+      "tags": {},
+      "properties": {
+        "defaultDataLakeStoreAccount": "[parameters('adlStoreName')]",
+        "dataLakeStoreAccounts": [
+          {
+            "name": "[parameters('adlStoreName')]"
+          }
+        ]
+      }
+    }
+
+  ],
+
+  "outputs": {
+    "adlAnalyticsAccount": {
+      "type": "object",
+      "value": "[reference(resourceId('Microsoft.DataLakeAnalytics/accounts',parameters('adlAnalyticsName')))]"
+    },
+    "adlStoreAccount": {
+      "type": "object",
+      "value": "[reference(resourceId('Microsoft.DataLakeStore/accounts',parameters('adlStoreName')))]"
+    }
+  }
+
+}
