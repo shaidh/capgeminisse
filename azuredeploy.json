@@ -35,7 +35,7 @@
       "type": "string"
     },
     "storageAccounts_virtualdiskstorageacc_name": {
-      "defaultValue": "virtualdiskstorageacc",
+      "defaultValue": "virtualdiskstorageacc123",
       "type": "string"
     },
     "publicIPAddresses_DatabaseServerVM1_ip1_name": {
@@ -48,6 +48,14 @@
     },
     "vm_adminPassword_name": {
       "defaultValue": "RobinaSha101",
+      "type": "string"
+    },
+    "vm_publicdomain_name": {
+      "defaultValue": "ssecapgemini",
+      "type": "string"
+    },
+    "vm_publicfdqn_name": {
+      "defaultValue": "ssecapgemini.westeurope.cloudapp.azure.com",
       "type": "string"
     },
     "adlAnalyticsName": {
@@ -723,8 +731,8 @@
         "publicIPAllocationMethod": "Dynamic",
         "idleTimeoutInMinutes": 4,
         "dnsSettings": {
-          "domainNameLabel": "capgeminisse123",
-          "fqdn": "capgeminisse123.westeurope.cloudapp.azure.com"
+          "domainNameLabel": "[parameters('vm_publicdomain_name')]",
+          "fqdn": "[parameters('vm_publicfdqn_name')]"
         },
         "ipTags": []
       },
